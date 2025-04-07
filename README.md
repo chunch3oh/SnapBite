@@ -1,7 +1,7 @@
 # 🥗 SnapBite
 
 
-**🌏 [English Version Below ⬇](#snapbite-en)**  
+🌐 English version available below — [Jump to English ⬇](#snapbite-en)  
 
 SnapBite 是一個整合 LINE Bot 與 AI 圖像分析的飲食追蹤系統。使用者只需透過 LINE 傳送餐點照片，系統便能自動辨識食物、分析份量與營養成分，並提供即時建議與每日視覺化報告。
 
@@ -62,7 +62,7 @@ SnapBite/
 
 ---
 
-## 🌐 SnapBite (EN)
+## SnapBite (EN)
 
 SnapBite is a dietary tracking system that integrates LINE Bot with AI-powered image analysis. By simply sending a photo of your meal through LINE, the system can automatically detect food items, estimate portion sizes using reference objects, analyze nutritional content, and provide real-time dietary suggestions along with daily visual summaries.
 
