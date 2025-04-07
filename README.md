@@ -1,5 +1,8 @@
 # 🥗 SnapBite
 
+
+🌐 English version available below — [Jump to English ⬇](#snapbite-en)  
+
 SnapBite 是一個整合 LINE Bot 與 AI 圖像分析的飲食追蹤系統。使用者只需透過 LINE 傳送餐點照片，系統便能自動辨識食物、分析份量與營養成分，並提供即時建議與每日視覺化報告。
 
 ![系統架構圖](images/architecture.png)
@@ -56,3 +59,65 @@ SnapBite/
 ## 📮 聯絡我們
 
 由 Chun 開發，專為實用又溫暖的健康生活打造。
+
+---
+
+## SnapBite (EN)
+
+SnapBite is a dietary tracking system that integrates LINE Bot with AI-powered image analysis. By simply sending a photo of your meal through LINE, the system can automatically detect food items, estimate portion sizes using reference objects, analyze nutritional content, and provide real-time dietary suggestions along with daily visual summaries.
+
+![System Architecture](images/architecture.png)
+
+## 📦 Features
+
+- 📸 Image Recognition: Automatically detect food and reference objects
+- 🍱 Portion Estimation: Analyze portion size using computer vision
+- 🔍 Nutrition Calculation: Estimate calorie and nutrient intake using databases
+- 💬 Dietary Advice: Provide instant feedback based on intake
+- 📊 Visual Summary: Generate daily radar charts and nutrition graphs
+
+## 🧩 Technical Stack
+
+- **Frontend**: LINE Bot (deployed via Zeabur)
+- **Backend**: Python + Gradio for image processing and API responses
+- **AI Models**: YOLOv8 / OpenCV / Custom classifier
+- **Data Sources**: USDA FoodData Central, Taiwan Nutrition Database
+- **Visualization**: Matplotlib / Plotly
+
+## 🛠 Project Structure
+
+```
+SnapBite/
+├── source/
+│   ├── DrawArch.py          # Architecture diagram generator
+│   ├── image_analysis.py    # Image recognition and size estimation
+│   ├── nutrition.py         # Nutrition calculation logic
+│   ├── suggest.py           # Dietary suggestion module
+│   ├── visualize.py         # Daily nutrition visualization
+│
+├── linebot/
+│   ├── webhook.py           # Handle LINE webhook events
+│   ├── handler.py           # Message and image processing
+│   └── reply_format.py      # Format LINE responses
+│
+├── data/                    # User meal and nutrition records
+└── README.md
+```
+
+## 🚀 Getting Started
+
+1. Install Python dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. Run the backend for testing:
+   ```bash
+   python source/app.py
+   ```
+
+3. Deploy the webhook on Zeabur and bind it to your LINE Bot
+
+## 📮 Contact
+
+Developed by Chun — built for a smart and caring approach to everyday health.
