@@ -13,7 +13,7 @@ from .storage import save_analysis_log
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-analyst = Analyst(language="Chinese")
+analyst = Analyst(language="zh-TW")
 
 HELP_TEXT = (
     "傳送餐點照片，我會回覆營養摘要。\n"

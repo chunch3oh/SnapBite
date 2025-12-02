@@ -3,9 +3,9 @@ import requests
 from PIL import Image
 from io import BytesIO
 import json
-import gradio as gr
 import logging
-from openai import OpenAI
+import gradio as gr
+from openai import OpenAI, OpenAIError
 import os
 from dotenv import load_dotenv
 from pydantic import BaseModel
@@ -25,6 +25,9 @@ REFERENCE_OBJECT = {
     "length_cm": 6.06  # example length of reference item in centimeters
 }
 
+MAX_COMPLETION_TOKENS = 600
+
+
 class Macronutrient(BaseModel):
     carbs: str
     protein: str
@@ -39,10 +42,10 @@ class FoodItem(BaseModel):
 class NutritionAnalysis(BaseModel):
     food_items: List[FoodItem]
 
-VISION_MODEL = "gpt-5-mini"  
+VISION_MODEL = "gpt-4o-mini"  # vision-capable, lighter output
 
 class Analyst:
-    def __init__(self, api_key: str = None, reference_object: dict = REFERENCE_OBJECT, vision_model: str = VISION_MODEL, language: str = "English"):
+    def __init__(self, api_key: str = None, reference_object: dict = REFERENCE_OBJECT, vision_model: str = VISION_MODEL, language: str = "zh-TW"):
         # Initialize the OpenAI client and analysis settings
         self.api_key = api_key or OPENAI_API_KEY
         self.client = OpenAI(api_key=self.api_key)
@@ -54,57 +57,69 @@ class Analyst:
         with open(image_path, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode("utf-8")
 
+    def _build_messages(self, base64_image: str, concise: bool = False):
+        user_instruction = (
+            f"Estimate foods in the photo using reference object {self.reference_object['name']} "
+            f"({self.reference_object['length_cm']} cm). Return JSON with food_items: "
+            "[{name, portion_size (e.g. 100g or 1/2 reference), calories (e.g. 230 kcal), "
+            "macronutrients: {carbs, protein, fat} in grams}]. No extra text."
+        )
+
+        if concise:
+            user_instruction += (
+                " Limit to 3 items max, keep portion_size/calories/macros short integers or whole numbers."
+            )
+
+        return [
+            {
+                "role": "system",
+                "content": (
+                    "You are a professional nutrition analyst AI. Analyze meal images and return nutritional information in Traditional Chinese (zh-TW). "
+                    "All text values (food names, units) must be zh-TW. Be precise and concise, and respond in a structured JSON format only."
+                )
+            },
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": user_instruction
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{base64_image}"
+                        }
+                    }
+                ]
+            }
+        ]
+
     def call_openai_vision_api(self, base64_image: str):
         logging.info("Sending request to OpenAI API...")
-        response = self.client.beta.chat.completions.parse(
-            model=self.vision_model,
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        f"You are a professional nutrition analyst AI. Your job is to analyze meal images and return nutritional information in {self.language}. "
-                        "Be precise and concise, and respond in a structured JSON format only. "
-                        "Do not include reasoning or explanations. Keep total output under 800 tokens."
-                    )
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": (
-                                f"This image contains a meal. Estimate the types of food using the reference object ({self.reference_object['name']}, "
-                                f"{self.reference_object['length_cm']} cm long). Return a structured JSON following this schema:\n\n"
-                                "- List of food items (max 6)\n"
-                                "- Each item includes:\n"
-                                "  - name\n"
-                                "  - portion_size (e.g., 100g or 1/2 of reference)\n"
-                                "  - calories (e.g., 230 kcal)\n"
-                                "  - macronutrients: carbs, protein, fat (in grams)\n\n"
-                                "Keep strings brief (<=40 characters). If unsure, give best estimate. "
-                                "Avoid any explanatory text, only respond with JSON that fits the expected format."
-                            )
-                        },
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{base64_image}"
-                            }
-                        }
-                    ]
-                }
-            ],
-            response_format=NutritionAnalysis,
-            max_completion_tokens=800
-        )
-        logging.info("Received response from OpenAI API")
-        return response
+        messages = self._build_messages(base64_image)
+        try:
+            response = self.client.beta.chat.completions.parse(
+                model=self.vision_model,
+                messages=messages,
+                response_format=NutritionAnalysis,
+                max_completion_tokens=MAX_COMPLETION_TOKENS
+            )
+            logging.info("Received response from OpenAI API")
+            return response
+        except OpenAIError:
+            logging.exception("OpenAI API call failed")
+            return None
 
     def analyze_image(self, image_path: str) -> dict:
         base64_image = self.encode_image_to_base64(image_path)
         result = self.call_openai_vision_api(base64_image)
+        if not result:
+            return {}
         try:
             structured_output = result.choices[0].message.parsed
+            if hasattr(structured_output, "model_dump"):
+                return structured_output.model_dump()
             return structured_output
         except Exception as e:
             logging.error("Failed to parse structured output", exc_info=True)
