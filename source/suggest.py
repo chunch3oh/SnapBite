@@ -25,7 +25,7 @@ class MealSuggestion(BaseModel):
 # Make sure your OpenAI API key is set as an environment variable: OPENAI_API_KEY
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-MODEL = "gpt-4o-mini"
+MODEL = "gpt-5-mini"
 # Define the expected JSON response format
 RESPONSE_FORMAT = {
     "evaluation": "string",                   # brief evaluation of current meal
@@ -110,7 +110,7 @@ class MealSuggester:
                 {"role": "user", "content": user_prompt},
             ],
             response_format=self.response_format,
-            max_tokens=500
+            max_completion_tokens=500
         )
         logging.info("Received structured response from OpenAI API")
         return response

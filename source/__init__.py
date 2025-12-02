@@ -1,0 +1,1 @@
+# SnapBite core modules package
