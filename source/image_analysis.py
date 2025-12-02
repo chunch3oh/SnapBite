@@ -63,7 +63,8 @@ class Analyst:
                     "role": "system",
                     "content": (
                         f"You are a professional nutrition analyst AI. Your job is to analyze meal images and return nutritional information in {self.language}. "
-                        "Be precise and concise, and respond in a structured JSON format only."
+                        "Be precise and concise, and respond in a structured JSON format only. "
+                        "Do not include reasoning or explanations. Keep total output under 800 tokens."
                     )
                 },
                 {
@@ -74,12 +75,13 @@ class Analyst:
                             "text": (
                                 f"This image contains a meal. Estimate the types of food using the reference object ({self.reference_object['name']}, "
                                 f"{self.reference_object['length_cm']} cm long). Return a structured JSON following this schema:\n\n"
-                                "- List of food items\n"
+                                "- List of food items (max 6)\n"
                                 "- Each item includes:\n"
                                 "  - name\n"
                                 "  - portion_size (e.g., 100g or 1/2 of reference)\n"
                                 "  - calories (e.g., 230 kcal)\n"
                                 "  - macronutrients: carbs, protein, fat (in grams)\n\n"
+                                "Keep strings brief (<=40 characters). If unsure, give best estimate. "
                                 "Avoid any explanatory text, only respond with JSON that fits the expected format."
                             )
                         },
@@ -93,7 +95,7 @@ class Analyst:
                 }
             ],
             response_format=NutritionAnalysis,
-            max_completion_tokens=2000
+            max_completion_tokens=800
         )
         logging.info("Received response from OpenAI API")
         return response
