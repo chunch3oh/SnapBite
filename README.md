@@ -74,6 +74,11 @@ SnapBite/
 
 由 Chun 開發，專為實用又溫暖的健康生活打造。
 
+## Demo
+
+<img width="246" height="240" alt="image" src="https://github.com/user-attachments/assets/9045b693-ae4a-4a91-abaa-bec0b09527d5" />
+add line friends
+
 ---
 
 ## SnapBite (EN)
