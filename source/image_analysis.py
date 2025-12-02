@@ -39,7 +39,7 @@ class FoodItem(BaseModel):
 class NutritionAnalysis(BaseModel):
     food_items: List[FoodItem]
 
-VISION_MODEL = "gpt-4o-mini"  
+VISION_MODEL = "gpt-5-mini"  
 
 class Analyst:
     def __init__(self, api_key: str = None, reference_object: dict = REFERENCE_OBJECT, vision_model: str = VISION_MODEL, language: str = "English"):
@@ -93,7 +93,7 @@ class Analyst:
                 }
             ],
             response_format=NutritionAnalysis,
-            max_tokens=1000
+            max_completion_tokens=2000
         )
         logging.info("Received response from OpenAI API")
         return response
